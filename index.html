@@ -437,7 +437,7 @@ function renderList(){
       <input type="checkbox" ${checked.has(o.id)?'checked':''} onchange="toggleCheck('${o.id}',this.checked)">
       <div class="order-body">
         <div class="order-top">
-          <span class="order-name">${esc(o.name)}${o.receiver&&o.receiver!==o.name?` <span style="font-size:12px;font-weight:400;color:#888">(${esc(o.receiver)})</span>`:''}</span>
+          <span class="order-name">${esc(o.name)}${(o.receiver&&o.receiver!==o.name)?` <span style="font-size:12px;font-weight:400;color:#888">(${esc(o.receiver)})</span>`:''}</span>
           <div class="badges">
             ${o.box5>0?`<span class="badge b-qty5">5kg×${o.box5}</span>`:''}
             ${o.box3>0?`<span class="badge b-qty3">3kg×${o.box3}</span>`:''}
@@ -468,7 +468,8 @@ function fmtPrint(o){
   lines.push('주소 : '+o.addr);
   const qtyLabel2=[(o.box5>0?'5kg '+o.box5+'상자':''),(o.box3>0?'3kg '+o.box3+'상자':'')].filter(Boolean).join(', ');
   lines.push('주문수량 : '+qtyLabel2);
-  if(o.receiver&&o.receiver!==o.name)lines.push('주문자 : '+o.receiver);
+  const recv=o.receiver||o.name;
+  if(recv!==o.name)lines.push('주문자 : '+recv);
   if(o.note)lines.push('비고 : '+o.note);
   if(o.memo)lines.push('메모 : '+o.memo);
   return lines.join('\n');
@@ -497,7 +498,7 @@ function printSelected(){
       ${o.phone?`<div class="print-line">연락처 : ${o.phone}</div>`:''}
       <div class="print-line">주소 : ${o.addr}</div>
       <div class="print-line">주문수량 : ${[(o.box5>0?"5kg "+o.box5+"상자":""),(o.box3>0?"3kg "+o.box3+"상자":"")].filter(Boolean).join(", ")}</div>
-      ${o.receiver&&o.receiver!==o.name?`<div class="print-line">주문자 : ${o.receiver}</div>`:''}
+      ${(o.receiver&&o.receiver!==o.name)?`<div class="print-line">주문자 : ${o.receiver}</div>`:''}
       ${o.note?`<div class="print-line">비고 : ${o.note}</div>`:''}
       ${o.memo?`<div class="print-line">메모 : ${o.memo}</div>`:''}
     </div>`;
@@ -553,7 +554,7 @@ function exportCSV(){
   const rows=[['날짜','이름(받는사람)','연락처','주소','주문수량','주문자','입금여부','단골','배송완료','금액','비고','메모']];
   orders.forEach(o=>{
     const qty=[(o.box5>0?'5kg '+o.box5+'상자':''),(o.box3>0?'3kg '+o.box3+'상자':'')].filter(Boolean).join(', ');
-    rows.push([o.date,o.name,o.phone,o.addr,qty,o.receiver&&o.receiver!==o.name?o.receiver:'',o.paid?'완료':'미입금',o.regular?'단골':'신규',o.done?'완료':'',''+((PRICE[5]||0)*(o.box5||0)+(PRICE[3]||0)*(o.box3||0)),o.note||'',o.memo||'']);
+    rows.push([o.date,o.name,o.phone,o.addr,qty,(o.receiver&&o.receiver!==o.name)?o.receiver:'',o.paid?'완료':'미입금',o.regular?'단골':'신규',o.done?'완료':'',''+((PRICE[5]||0)*(o.box5||0)+(PRICE[3]||0)*(o.box3||0)),o.note||'',o.memo||'']);
   });
   const csv=rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
